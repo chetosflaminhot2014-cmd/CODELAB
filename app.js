@@ -17,7 +17,7 @@ const courses=[
 {name:"CSS",short:"CSS",category:"web",tag:"WEB",desc:"Diseña interfaces, estilos y experiencias adaptables.",level:"Principiante",lessons:9}
 ];
 const grid=document.getElementById('courseGrid'),search=document.getElementById('searchInput'),filter=document.getElementById('categoryFilter');
-function renderCourses(){const q=search.value.trim().toLowerCase(),cat=filter.value;const list=courses.filter(c=>(cat==='all'||c.category===cat)&&(c.name.toLowerCase().includes(q)||c.desc.toLowerCase().includes(q)));grid.innerHTML=list.length?list.map(c=>'<article class="course-card"><div class="course-top"><div class="course-icon">'+c.short+'</div><span class="course-tag">'+c.tag+'</span></div><h3>'+c.name+'</h3><p>'+c.desc+'</p><div class="course-bottom"><span>'+c.level+' · '+c.lessons+' lecciones</span><b>↗</b></div></article>').join(''):'<div class="empty-state">No encontramos resultados. Prueba con otro término.</div>';document.getElementById('courseCount').textContent=list.length+' de 16 tecnologías';}
+function renderCourses(){const q=search.value.trim().toLowerCase(),cat=filter.value;const list=courses.filter(c=>(cat==='all'||c.category===cat)&&(c.name.toLowerCase().includes(q)||c.desc.toLowerCase().includes(q)));grid.innerHTML=list.length?list.map(c=>'<article class="course-card"><div class="course-top"><div class="course-icon">'+c.short+'</div><span class="course-tag">'+c.tag+'</span></div><h3>'+c.name+'</h3><p>'+c.desc+'</p><div class="course-bottom"><span>'+c.level+'</span><b>↗</b></div></article>').join(''):'<div class="empty-state">No encontramos resultados. Prueba con otro término.</div>';document.getElementById('courseCount').textContent=list.length+' de 16 tecnologías';}
 search.addEventListener('input',renderCourses);filter.addEventListener('change',renderCourses);renderCourses();
 const examples={
 javascript:{code:'const nombre = "CODELAB";\nconst nivel = "principiante";\n\nconsole.log("Hola, " + nombre);',tip:'En JavaScript, const declara una variable cuyo valor no se reasigna.'},
@@ -32,15 +32,42 @@ language.addEventListener('change',setExample);editor.addEventListener('input',u
 const toast=document.getElementById('toast');let toastTimer;function notify(msg){toast.textContent=msg;toast.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>toast.classList.remove('show'),2200);}
 document.getElementById('copyCode').addEventListener('click',async()=>{try{await navigator.clipboard.writeText(editor.value);notify('Código copiado al portapapeles.');}catch{editor.select();notify('Selecciona y copia el código.');}});
 document.getElementById('profileBtn').addEventListener('click',()=>notify('El perfil de estudiante llegará en una próxima versión.'));
-document.getElementById('mobileMenu').addEventListener('click',()=>{const nav=document.querySelector('.topbar nav');const open=nav.style.display==='flex';nav.style.display=open?'none':'flex';if(!open){nav.style.position='absolute';nav.style.top='67px';nav.style.left='0';nav.style.right='0';nav.style.padding='20px';nav.style.background='#0d1726';nav.style.flexDirection='column';nav.style.borderBottom='1px solid #26364e';}});
+const mobileMenu=document.getElementById('mobileMenu'),primaryNav=document.getElementById('primaryNav');
+mobileMenu.addEventListener('click',()=>{const open=mobileMenu.getAttribute('aria-expanded')==='true';mobileMenu.setAttribute('aria-expanded',String(!open));primaryNav.style.display=open?'none':'flex';if(!open){primaryNav.style.position='absolute';primaryNav.style.top='67px';primaryNav.style.left='0';primaryNav.style.right='0';primaryNav.style.padding='20px';primaryNav.style.background='#0d1726';primaryNav.style.flexDirection='column';primaryNav.style.borderBottom='1px solid #26364e';}});
+primaryNav.querySelectorAll('a').forEach(link=>link.addEventListener('click',()=>{if(window.matchMedia('(max-width: 600px)').matches){primaryNav.style.display='none';mobileMenu.setAttribute('aria-expanded','false');}}));
 
 const gamePanel=document.getElementById('gamePanel'),challengePanel=document.getElementById('challengePanel');
-document.getElementById('startGame').addEventListener('click',()=>{gamePanel.hidden=false;challengePanel.hidden=true;gamePanel.scrollIntoView({behavior:'smooth',block:'center'});});
+document.getElementById('startGame').addEventListener('click',()=>{gameQuestionIndex=0;renderGameQuestion();gamePanel.hidden=false;challengePanel.hidden=true;gamePanel.scrollIntoView({behavior:'smooth',block:'center'});});
 document.getElementById('startChallenge').addEventListener('click',()=>{challengePanel.hidden=false;gamePanel.hidden=true;challengePanel.scrollIntoView({behavior:'smooth',block:'center'});});
 document.querySelectorAll('[data-close]').forEach(b=>b.addEventListener('click',()=>document.getElementById(b.dataset.close).hidden=true));
-document.getElementById('gameAnswers').addEventListener('click',e=>{const b=e.target.closest('button[data-answer]');if(!b)return;document.querySelectorAll('#gameAnswers button').forEach(x=>x.disabled=true);const ok=b.dataset.answer==='alert()';const f=document.getElementById('gameFeedback');f.textContent=ok?'¡Correcto! alert() abre un cuadro de diálogo en el navegador.':'No exactamente. En este ejemplo, alert() muestra un cuadro de diálogo.';f.className='panel-feedback '+(ok?'correct':'incorrect');});
-document.getElementById('nextQuestion').addEventListener('click',()=>{document.getElementById('gameQuestion').textContent='¿Qué tipo de dato representa \"Hola\" en JavaScript?';document.getElementById('gameAnswers').innerHTML='<button data-answer="string">String (texto)</button><button data-answer="number">Number (número)</button><button data-answer="boolean">Boolean (lógico)</button>';document.getElementById('gameFeedback').textContent='Selecciona una respuesta.';document.getElementById('gameFeedback').className='panel-feedback';});
-document.getElementById('gameAnswers').addEventListener('click',e=>{const b=e.target.closest('button[data-answer]');if(!b)return;const f=document.getElementById('gameFeedback');if(document.getElementById('gameQuestion').textContent.includes('tipo de dato')){document.querySelectorAll('#gameAnswers button').forEach(x=>x.disabled=true);const ok=b.dataset.answer==='string';f.textContent=ok?'¡Correcto! \"Hola\" es una cadena de texto (string).':'La respuesta correcta es String: representa texto.';f.className='panel-feedback '+(ok?'correct':'incorrect');}});
+const gameQuestions=[
+{question:'¿Qué instrucción muestra un mensaje en JavaScript?',answers:[['alert()','alert()'],['print()','print()'],['echo','echo']],correct:'alert()',success:'¡Correcto! alert() abre un cuadro de diálogo en el navegador.',failure:'No exactamente. alert() muestra un cuadro de diálogo.'},
+{question:'¿Qué tipo de dato representa "Hola" en JavaScript?',answers:[['string','String (texto)'],['number','Number (número)'],['boolean','Boolean (lógico)']],correct:'string',success:'¡Correcto! "Hola" es una cadena de texto (string).',failure:'La respuesta correcta es String: representa texto.'},
+{question:'¿Qué palabra declara una variable que puede cambiar en JavaScript?',answers:[['const','const'],['let','let'],['class','class']],correct:'let',success:'¡Correcto! let declara una variable cuyo valor puede cambiar.',failure:'La respuesta correcta es let: permite reasignar el valor de la variable.'}
+];
+let gameQuestionIndex=0;
+function renderGameQuestion(){
+const question=gameQuestions[gameQuestionIndex];
+document.getElementById('gameQuestion').textContent=question.question;
+document.getElementById('gameAnswers').innerHTML=question.answers.map(([value,label])=>'<button data-answer="'+value+'">'+label+'</button>').join('');
+document.getElementById('gameFeedback').textContent='Selecciona una respuesta.';
+document.getElementById('gameFeedback').className='panel-feedback';
+document.getElementById('nextQuestion').textContent=gameQuestionIndex===gameQuestions.length-1?'Reiniciar ronda ↻':'Siguiente pregunta ↗';
+}
+document.getElementById('gameAnswers').addEventListener('click',e=>{
+const b=e.target.closest('button[data-answer]');
+if(!b||b.disabled)return;
+document.querySelectorAll('#gameAnswers button').forEach(x=>x.disabled=true);
+const question=gameQuestions[gameQuestionIndex],ok=b.dataset.answer===question.correct;
+const feedback=document.getElementById('gameFeedback');
+feedback.textContent=ok?question.success:question.failure;
+feedback.className='panel-feedback '+(ok?'correct':'incorrect');
+});
+document.getElementById('nextQuestion').addEventListener('click',()=>{
+gameQuestionIndex=(gameQuestionIndex+1)%gameQuestions.length;
+renderGameQuestion();
+});
+renderGameQuestion();
 document.getElementById('challengeAnswers').addEventListener('click',e=>{const b=e.target.closest('button[data-answer]');if(!b)return;document.querySelectorAll('#challengeAnswers button').forEach(x=>x.disabled=true);const ok=b.dataset.answer==='32',f=document.getElementById('challengeFeedback');f.textContent=ok?'¡Bien! Cada número se multiplica por 2.':'Pista: cada término es el doble del anterior. La respuesta es 32.';f.className='panel-feedback '+(ok?'correct':'incorrect');});
 const titleInput=document.getElementById('creatorTitle'),descInput=document.getElementById('creatorDescription'),colorInput=document.getElementById('creatorColor');
 function updatePreview(){document.getElementById('previewTitle').textContent=titleInput.value||'Mi primer proyecto';document.getElementById('previewDescription').textContent=descInput.value||'Una idea que estoy construyendo.';document.getElementById('creatorPreview').style.setProperty('--accent',colorInput.value);}
