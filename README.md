@@ -11,13 +11,15 @@ Plataforma web estática para explorar tecnologías, practicar con ejemplos edit
 JavaScript, Python, TypeScript, Java, C#, C++, C, PHP, Go, Rust, Kotlin, Swift, Lua, SQL, HTML y CSS.
 
 ## Funciones disponibles
-- Catálogo de 16 tecnologías con búsqueda y filtro por categoría.
+- Catálogo de 16 tecnologías con búsqueda, filtro y fichas de ruta accesibles con teclado o toque.
+- Fichas de ruta con objetivo inicial; cuatro tecnologías enlazan directamente con ejemplos disponibles en el laboratorio.
 - Laboratorio con ejemplos editables de JavaScript, Python, Java y HTML.
 - Copiar código al portapapeles.
 - Game Lab con tres preguntas de opción múltiple.
 - Reto de lógica con una sucesión numérica.
 - Creator Studio para diseñar una tarjeta y previsualizarla.
-- Guardado local de hasta 30 tarjetas de proyecto en el navegador actual.
+- Guardado local de hasta 30 tarjetas de proyecto en el navegador actual, con opción para eliminarlas.
+- Panel de perfil local con resumen de tecnologías y proyectos guardados.
 - Sección de inspiración con ideas para proyectos.
 - Diseño adaptable a pantallas móviles y de escritorio.
 
