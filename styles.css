@@ -11,3 +11,51 @@
 
 .lesson-dialog{max-height:min(88vh,900px);overflow:auto}.lesson-progress{margin:18px 0 20px}.lesson-progress>div:first-child{display:flex;justify-content:space-between;gap:12px;font:9px "DM Mono";color:#9eafc4}.lesson-progress b{color:var(--cyan)}.lesson-progress-track{height:6px;background:#24344b;border-radius:99px;margin-top:9px;overflow:hidden}.lesson-progress-track i{display:block;height:100%;background:linear-gradient(90deg,var(--cyan),#8aa3ff);border-radius:99px}.lesson-step{font:9px "DM Mono";letter-spacing:.12em;color:var(--cyan);margin-top:12px}.lesson-title{font-size:23px;margin:8px 0}.lesson-goal,.lesson-explanation{font-size:11px;line-height:1.8;color:#aab8ca}.lesson-goal b{color:#dce8f7}.lesson-code{white-space:pre-wrap;overflow:auto;padding:16px;border:1px solid #2c405a;border-radius:7px;background:#081321;color:#b9e5dc;font:11px/1.8 "DM Mono"}.lesson-exercise{margin-top:18px;padding:17px;border:1px solid #30435d;border-radius:8px;background:#0d1929}.lesson-exercise> b{font:9px "DM Mono";letter-spacing:.1em;color:var(--cyan)}.lesson-exercise>p{font-size:11px;line-height:1.7;color:#e0e8f4}.lesson-options{display:grid;gap:8px}.lesson-options label{display:flex;align-items:center;gap:9px;padding:10px;border:1px solid #2d4058;border-radius:6px;color:#c4d0df;font-size:11px;cursor:pointer}.lesson-options label:has(input:checked){border-color:var(--cyan);background:#143039}.lesson-options input{accent-color:#59e1d0}.lesson-actions{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-top:18px}.lesson-secondary,.lesson-complete,.lesson-practice{border:1px solid #344a65;border-radius:6px;padding:10px 12px;background:#17283d;color:#dce8f7;font:9px "DM Mono";cursor:pointer}.lesson-complete{background:var(--cyan);border-color:var(--cyan);color:#06131a;font-weight:800}.lesson-complete:disabled,.lesson-secondary:disabled{opacity:.4;cursor:not-allowed}.lesson-practice{margin-top:12px;color:var(--cyan);background:transparent}.lesson-actions .lesson-secondary{flex:0 0 auto}.lesson-actions .lesson-complete{flex:1}
 @media(max-width:600px){.lesson-dialog{padding:20px}.lesson-title{font-size:20px}.lesson-actions{flex-wrap:wrap}.lesson-actions .lesson-complete{order:3;flex-basis:100%}.lesson-actions .lesson-secondary{flex:1}}
+
+
+/* OKNEW responsive layout refinement */
+html,body{max-width:100%;overflow-x:clip}
+main,.section-wrap,.hero-copy,.hero-art{min-width:0}
+.hero-copy{width:100%}
+.hero h1{overflow-wrap:break-word}
+.hero-art{width:100%;min-width:0}
+.code-window{max-width:100%}
+.profile-popover{width:min(340px,calc(100vw - 32px));max-width:calc(100vw - 32px);right:16px;top:78px;box-sizing:border-box}
+.profile-popover *{min-width:0;overflow-wrap:anywhere}
+@media(max-width:850px){
+  .hero{grid-template-columns:minmax(0,1fr);gap:12px}
+  .hero-copy,.hero-art{width:100%}
+  .hero-art{max-width:620px;margin-inline:auto}
+}
+@media(max-width:600px){
+  .topbar{padding:0 16px}
+  .brand{gap:8px;font-size:14px}
+  .brand-mark{width:36px;height:36px}
+  .top-actions{gap:12px}
+  .section-wrap{padding-left:18px;padding-right:18px}
+  .hero{padding-top:42px;padding-bottom:42px}
+  .hero h1{font-size:clamp(38px,10.8vw,50px);line-height:1.08;letter-spacing:-.06em}
+  .eyebrow{font-size:9px;letter-spacing:.08em;flex-wrap:wrap}
+  .hero-text{font-size:12px;line-height:1.75}
+  .hero-actions{display:flex;flex-wrap:wrap;gap:10px}
+  .hero-actions .button{flex:1 1 145px;justify-content:center;padding:13px 12px;gap:9px;font-size:11px}
+  .hero-meta{margin-top:28px}
+  .hero-art{height:270px;margin:0;overflow:visible}
+  .orbit-one{width:min(320px,88vw);height:190px}
+  .orbit-two{width:min(350px,96vw);height:235px}
+  .code-window{width:min(100%,440px)}
+  .floating-tag{max-width:42%;white-space:normal}
+  .tag-top{right:0}
+  .tag-bottom{left:0}
+  .profile-popover{left:12px;right:12px;top:76px;width:auto;max-width:none;padding:15px}
+  .profile-stats{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .profile-stats span{padding:10px;font-size:8px}
+  .profile-stats b{font-size:19px}
+}
+@media(max-width:380px){
+  .brand small{font-size:7px;letter-spacing:.12em}
+  .hero h1{font-size:38px}
+  .hero-actions .button{flex-basis:100%}
+  .hero-art{height:245px}
+  .code-body{font-size:9px;padding:13px 10px}
+}
