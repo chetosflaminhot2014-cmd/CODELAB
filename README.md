@@ -1,4 +1,8 @@
-# CODELAB — Alpha 0.1.0
+# OKNEW — Alpha 0.1.0
+
+**Open Knowledge New** — Conocimiento Abierto Nuevo.
+
+Eslogan: *A new way to learn. Knowledge for everyone.*
 
 Plataforma web estática para explorar tecnologías, practicar con ejemplos editables y desarrollar ideas de programación.
 
