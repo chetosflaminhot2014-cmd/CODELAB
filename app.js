@@ -17,7 +17,7 @@ const courses=[
 {name:"CSS",short:"CSS",category:"web",tag:"WEB",desc:"Diseña interfaces, estilos y experiencias adaptables.",level:"Principiante",lessons:9}
 ];
 const grid=document.getElementById('courseGrid'),search=document.getElementById('searchInput'),filter=document.getElementById('categoryFilter');
-function renderCourses(){const q=search.value.trim().toLowerCase(),cat=filter.value;const list=courses.filter(c=>(cat==='all'||c.category===cat)&&(c.name.toLowerCase().includes(q)||c.desc.toLowerCase().includes(q)));grid.innerHTML=list.length?list.map(c=>'<article class="course-card"><div class="course-top"><div class="course-icon">'+c.short+'</div><span class="course-tag">'+c.tag+'</span></div><h3>'+c.name+'</h3><p>'+c.desc+'</p><div class="course-bottom"><span>'+c.level+'</span><b>↗</b></div></article>').join(''):'<div class="empty-state">No encontramos resultados. Prueba con otro término.</div>';document.getElementById('courseCount').textContent=list.length+' de 16 tecnologías';}
+function renderCourses(){const q=search.value.trim().toLowerCase(),cat=filter.value;const list=courses.filter(c=>(cat==='all'||c.category===cat)&&(c.name.toLowerCase().includes(q)||c.desc.toLowerCase().includes(q)));grid.innerHTML=list.length?list.map(c=>'<article class="course-card" role="button" tabindex="0" data-course="'+c.name+'" aria-label="Ver ruta de '+c.name+'"><div class="course-top"><div class="course-icon">'+c.short+'</div><span class="course-tag">'+c.tag+'</span></div><h3>'+c.name+'</h3><p>'+c.desc+'</p><div class="course-bottom"><span>'+c.level+'</span><b>↗</b></div></article>').join(''):'<div class="empty-state">No encontramos resultados. Prueba con otro término.</div>';document.getElementById('courseCount').textContent=list.length+' de 16 tecnologías';}
 search.addEventListener('input',renderCourses);filter.addEventListener('change',renderCourses);renderCourses();
 const examples={
 javascript:{code:'const nombre = "CODELAB";\nconst nivel = "principiante";\n\nconsole.log("Hola, " + nombre);',tip:'En JavaScript, const declara una variable cuyo valor no se reasigna.'},
@@ -29,9 +29,34 @@ const editor=document.getElementById('codeEditor'),language=document.getElementB
 function setExample(){const ex=examples[language.value];editor.value=ex.code;document.getElementById('codeTip').textContent=ex.tip;updateLines();}
 function updateLines(){gutter.innerHTML=editor.value.split('\n').map((_,i)=>i+1).join('<br>');}
 language.addEventListener('change',setExample);editor.addEventListener('input',updateLines);setExample();
+grid.addEventListener('click',e=>{const card=e.target.closest('[data-course]');if(card)openCourse(card.dataset.course);});
+grid.addEventListener('keydown',e=>{const card=e.target.closest('[data-course]');if(card&&(e.key==='Enter'||e.key===' ')){e.preventDefault();openCourse(card.dataset.course);}});
+function openCourse(name){
+ const course=courses.find(item=>item.name===name);if(!course)return;
+ let modal=document.getElementById('courseDialog');
+ if(!modal){modal=document.createElement('div');modal.id='courseDialog';modal.className='course-dialog';modal.setAttribute('role','dialog');modal.setAttribute('aria-modal','true');modal.setAttribute('aria-labelledby','courseDialogTitle');document.body.appendChild(modal);}
+ const supported={JavaScript:'javascript',Python:'python',Java:'java',HTML:'html'};
+ const languageKey=supported[name];
+ modal.innerHTML='<div class="course-dialog-card"><button class="panel-close" id="closeCourse" aria-label="Cerrar">×</button><span class="eyebrow">RUTA DE APRENDIZAJE / '+escapeText(course.tag)+'</span><h2 id="courseDialogTitle">'+escapeText(course.name)+'</h2><p>'+escapeText(course.desc)+'</p><div class="course-detail-block"><b>Primer objetivo</b><span>Conocer para qué se utiliza '+escapeText(course.name)+' y reconocer su sintaxis básica.</span></div><div class="course-detail-block"><b>Nivel</b><span>Principiante · Fundamentos</span></div>'+(languageKey?'<button class="button primary" id="practiceCourse">Abrir ejemplo en el laboratorio ↗</button>':'<p class="course-coming">El ejemplo interactivo de esta tecnología todavía no está disponible. La ruta se ampliará en próximas versiones.</p>')+'</div>';
+ modal.hidden=false;
+ document.getElementById('closeCourse').addEventListener('click',()=>modal.remove());
+ const practice=document.getElementById('practiceCourse');
+ if(practice)practice.addEventListener('click',()=>{language.value=languageKey;setExample();modal.remove();document.getElementById('laboratorio').scrollIntoView({behavior:'smooth'});});
+ modal.addEventListener('click',e=>{if(e.target===modal)modal.remove();},{once:true});
+}
 const toast=document.getElementById('toast');let toastTimer;function notify(msg){toast.textContent=msg;toast.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>toast.classList.remove('show'),2200);}
 document.getElementById('copyCode').addEventListener('click',async()=>{try{await navigator.clipboard.writeText(editor.value);notify('Código copiado al portapapeles.');}catch{editor.select();notify('Selecciona y copia el código.');}});
-document.getElementById('profileBtn').addEventListener('click',()=>notify('El perfil de estudiante llegará en una próxima versión.'));
+const profileBtn=document.getElementById('profileBtn');
+profileBtn.addEventListener('click',()=>{
+ const total=getProjects().length;
+ const profile=document.getElementById('profilePanel');
+ if(profile){profile.remove();return;}
+ const panel=document.createElement('section');
+ panel.id='profilePanel';panel.className='profile-popover';
+ panel.innerHTML='<div class="profile-popover-head"><strong>Perfil local</strong><button type="button" aria-label="Cerrar perfil">×</button></div><p>Tu actividad en este dispositivo.</p><div class="profile-stats"><span><b>16</b>Tecnologías</span><span><b>'+total+'</b>Proyectos guardados</span></div><small>No necesitas crear una cuenta. Los proyectos permanecen en este navegador.</small>';
+ document.body.appendChild(panel);
+ panel.querySelector('button').addEventListener('click',()=>panel.remove());
+});
 const mobileMenu=document.getElementById('mobileMenu'),primaryNav=document.getElementById('primaryNav');
 mobileMenu.addEventListener('click',()=>{const open=mobileMenu.getAttribute('aria-expanded')==='true';mobileMenu.setAttribute('aria-expanded',String(!open));primaryNav.style.display=open?'none':'flex';if(!open){primaryNav.style.position='absolute';primaryNav.style.top='67px';primaryNav.style.left='0';primaryNav.style.right='0';primaryNav.style.padding='20px';primaryNav.style.background='#0d1726';primaryNav.style.flexDirection='column';primaryNav.style.borderBottom='1px solid #26364e';}});
 primaryNav.querySelectorAll('a').forEach(link=>link.addEventListener('click',()=>{if(window.matchMedia('(max-width: 600px)').matches){primaryNav.style.display='none';mobileMenu.setAttribute('aria-expanded','false');}}));
@@ -74,7 +99,8 @@ function updatePreview(){document.getElementById('previewTitle').textContent=tit
 [titleInput,descInput,colorInput].forEach(el=>el.addEventListener('input',updatePreview));updatePreview();
 const storageKey='codelab-projects-v1';
 function getProjects(){try{const v=JSON.parse(localStorage.getItem(storageKey)||'[]');return Array.isArray(v)?v:[];}catch{return [];}}
-function renderProjects(){const projects=getProjects(),target=document.getElementById('savedProjects');document.getElementById('savedCount').textContent=projects.length+' guardados';if(!projects.length){target.innerHTML='<div class="empty-projects">Todavía no guardas proyectos. Crea una tarjeta en Creator Studio para comenzar.</div>';return;}target.innerHTML=projects.map(p=>'<article class="saved-project"><h3>'+escapeText(p.title)+'</h3><p>'+escapeText(p.description)+'</p><small>'+escapeText(p.date)+'</small></article>').join('');}
+function renderProjects(){const projects=getProjects(),target=document.getElementById('savedProjects');document.getElementById('savedCount').textContent=projects.length+' guardados';if(!projects.length){target.innerHTML='<div class="empty-projects">Todavía no guardas proyectos. Crea una tarjeta en Creator Studio para comenzar.</div>';return;}target.innerHTML=projects.map((p,i)=>'<article class="saved-project"><h3>'+escapeText(p.title)+'</h3><p>'+escapeText(p.description)+'</p><small>'+escapeText(p.date)+'</small><button type="button" class="delete-project" data-delete-project="'+i+'">Eliminar</button></article>').join('');}
 function escapeText(value){return String(value).replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));}
+document.getElementById('savedProjects').addEventListener('click',e=>{const b=e.target.closest('[data-delete-project]');if(!b)return;const projects=getProjects();projects.splice(Number(b.dataset.deleteProject),1);try{localStorage.setItem(storageKey,JSON.stringify(projects));renderProjects();notify('Proyecto eliminado de este dispositivo.');}catch{notify('No se pudo actualizar el almacenamiento.');}});
 document.getElementById('saveCreator').addEventListener('click',()=>{const projects=getProjects();if(projects.length>=30){notify('Has llegado al límite de 30 proyectos guardados en este navegador.');return;}projects.unshift({title:titleInput.value.trim()||'Proyecto sin título',description:descInput.value.trim()||'Sin descripción',date:new Date().toLocaleDateString('es-MX')});try{localStorage.setItem(storageKey,JSON.stringify(projects));renderProjects();notify('Proyecto guardado en este dispositivo.');}catch{notify('No se pudo guardar. Revisa el almacenamiento del navegador.');}});
 renderProjects();
