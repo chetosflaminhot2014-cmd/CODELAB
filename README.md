@@ -12,7 +12,8 @@ JavaScript, Python, TypeScript, Java, C#, C++, C, PHP, Go, Rust, Kotlin, Swift, 
 
 ## Funciones disponibles
 - Catálogo de 16 tecnologías con búsqueda, filtro y fichas de ruta accesibles con teclado o toque.
-- Fichas de ruta con objetivo inicial; cuatro tecnologías enlazan directamente con ejemplos disponibles en el laboratorio.
+- Rutas guiadas de JavaScript, Python, Java y HTML con tres lecciones cada una, ejemplos y ejercicios autocorregibles.
+- Seguimiento de lecciones completadas guardado localmente por tecnología.
 - Laboratorio con ejemplos editables de JavaScript, Python, Java y HTML.
 - Copiar código al portapapeles.
 - Game Lab con tres preguntas de opción múltiple.
@@ -25,7 +26,8 @@ JavaScript, Python, TypeScript, Java, C#, C++, C, PHP, Go, Rust, Kotlin, Swift, 
 
 ## Límites de esta versión
 - El Playground permite editar y copiar ejemplos; no ejecuta código.
-- Game Lab y Retos son actividades pequeñas, no cursos completos.
+- Las rutas guiadas disponibles son introductorias; las otras 12 tecnologías todavía no tienen lecciones.
+- El avance se guarda en el almacenamiento local del navegador y no se sincroniza entre dispositivos.
 - Los proyectos se guardan únicamente en el almacenamiento local del navegador y dispositivo; no se sincronizan con una cuenta ni se comparten.
 - No hay autenticación, backend ni base de datos.
 
