@@ -21,7 +21,7 @@ El backend de la carpeta `server/` incorpora:
 ## Variables necesarias del backend
 Consulta `server/.env.example`. En producción son obligatorias:
 - `DATABASE_URL`, `SESSION_SECRET`, `FRONTEND_URL`.
-- SMTP: `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS`, `SMTP_FROM`.
+- Resend: `RESEND_API_KEY` y `RESEND_FROM` (dirección de un dominio verificado); `RESEND_REPLY_TO` es opcional.
 
 ## Ejecutar backend localmente
 Desde `server/`:
@@ -32,4 +32,4 @@ Desde `server/`:
 El servidor aplica `schema.sql` al arrancar. No se deben subir secretos al repositorio.
 
 ## Estado
-La implementación de cuentas y sincronización está en desarrollo en la rama `feature/oknew-accounts-postgres`. No se considera activa hasta desplegar y comprobar el backend, PostgreSQL y el proveedor SMTP.
+La implementación de cuentas y sincronización está en desarrollo en la rama `feature/oknew-accounts-postgres`. No se considera activa hasta desplegar y comprobar el backend, PostgreSQL y el proveedor de correo. El plan gratuito de Render Postgres caduca a los 30 días; solo sirve para pruebas y no debe usarse como almacenamiento permanente.
