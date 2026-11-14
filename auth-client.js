@@ -112,6 +112,7 @@
       writeLocal(PROGRESS_KEY, merged.progress);
       writeLocal(PROJECTS_KEY, merged.projects);
       await request("/api/sync", { method: "PUT", body: JSON.stringify(merged) });
+      nativeSetItem.call(localStorage, OWNER_KEY, currentUser.id);
       window.dispatchEvent(new CustomEvent("oknew:cloud-sync"));
       setMessage("Progreso sincronizado con tu cuenta.", false);
     } catch (error) {
