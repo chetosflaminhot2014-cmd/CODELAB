@@ -336,9 +336,10 @@ app.patch("/api/profile", requireAuth, async (req, res, next) => {
 
 app.get("/api/sync", requireAuth, async (req, res, next) => {
   try {
-    const [progressRows, projectRows] = await Promise.all([
+    const [progressRows, projectRows, deletedRows] = await Promise.all([
       pool.query("SELECT course, lesson_index FROM learning_progress WHERE user_id = $1 ORDER BY course, lesson_index", [req.session.userId]),
-      pool.query("SELECT id, title, description, legacy_date, created_at FROM projects WHERE user_id = $1 ORDER BY created_at DESC", [req.session.userId])
+      pool.query("SELECT id, title, description, legacy_date, created_at FROM projects WHERE user_id = $1 ORDER BY created_at DESC", [req.session.userId]),
+      pool.query("SELECT project_id FROM deleted_projects WHERE user_id = $1", [req.session.userId])
     ]);
     const progress = {};
     for (const row of progressRows.rows) {
@@ -349,16 +350,26 @@ app.get("/api/sync", requireAuth, async (req, res, next) => {
       id: row.id, title: row.title, description: row.description,
       date: row.legacy_date || new Date(row.created_at).toLocaleDateString("es-MX")
     }));
-    res.json({ progress, projects });
+    res.json({ progress, projects, deletedProjectIds: deletedRows.rows.map(row => row.project_id) });
   } catch (error) { next(error); }
 });
 
 app.put("/api/sync", requireAuth, async (req, res, next) => {
   const progress = req.body.progress && typeof req.body.progress === "object" && !Array.isArray(req.body.progress) ? req.body.progress : {};
   const projects = Array.isArray(req.body.projects) ? req.body.projects.slice(0, 100) : [];
+  const deletedProjectIds = Array.isArray(req.body.deletedProjectIds) ? [...new Set(req.body.deletedProjectIds)].slice(0, 5000) : [];
   const client = await pool.connect();
   try {
     await client.query("BEGIN");
+    for (const rawId of deletedProjectIds) {
+      const id = String(rawId || "");
+      if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(id)) continue;
+      await client.query(
+        "INSERT INTO deleted_projects(user_id, project_id) VALUES($1, $2) ON CONFLICT(user_id, project_id) DO NOTHING",
+        [req.session.userId, id]
+      );
+      await client.query("DELETE FROM projects WHERE user_id = $1 AND id = $2", [req.session.userId, id]);
+    }
     for (const [course, indices] of Object.entries(progress).slice(0, 40)) {
       if (!Array.isArray(indices)) continue;
       const safeCourse = cleanText(course, 80);
@@ -381,7 +392,9 @@ app.put("/api/sync", requireAuth, async (req, res, next) => {
       const legacyDate = cleanText(project.date, 40);
       await client.query(
         `INSERT INTO projects(id, user_id, title, description, legacy_date)
-         VALUES($1, $2, $3, $4, $5) ON CONFLICT(user_id, id) DO NOTHING`,
+         SELECT $1, $2, $3, $4, $5
+         WHERE NOT EXISTS (SELECT 1 FROM deleted_projects WHERE user_id = $2 AND project_id = $1)
+         ON CONFLICT(user_id, id) DO NOTHING`,
         [id, req.session.userId, title, description, legacyDate]
       );
     }
