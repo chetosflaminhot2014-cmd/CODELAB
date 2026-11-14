@@ -4,6 +4,7 @@
   const API = window.OKNEW_API_URL || "https://oknew-api.onrender.com";
   const PROGRESS_KEY = "codelab-learning-progress-v1";
   const PROJECTS_KEY = "codelab-projects-v1";
+  const OWNER_KEY = "oknew-local-owner-id-v1";
   const nativeSetItem = Storage.prototype.setItem;
   let currentUser = null;
   let syncing = false;
@@ -100,7 +101,9 @@
     if (!currentUser || syncing) return;
     syncing = true;
     try {
-      const local = localSnapshot();
+      const ownerId = localStorage.getItem(OWNER_KEY);
+      const belongsToCurrentUser = !ownerId || ownerId === currentUser.id;
+      const local = belongsToCurrentUser ? localSnapshot() : { progress: {}, projects: [] };
       const remote = await request("/api/sync");
       const merged = {
         progress: mergeProgress(local.progress, remote.progress || {}),
