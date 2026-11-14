@@ -5,6 +5,7 @@
   const PROGRESS_KEY = "codelab-learning-progress-v1";
   const PROJECTS_KEY = "codelab-projects-v1";
   const OWNER_KEY = "oknew-local-owner-id-v1";
+  const DELETED_PROJECTS_KEY = "oknew-deleted-project-ids-v1";
   const nativeSetItem = Storage.prototype.setItem;
   let currentUser = null;
   let syncing = false;
@@ -104,14 +105,27 @@
       const ownerId = localStorage.getItem(OWNER_KEY);
       const belongsToCurrentUser = !ownerId || ownerId === currentUser.id;
       const local = belongsToCurrentUser ? localSnapshot() : { progress: {}, projects: [] };
+      if (!belongsToCurrentUser) writeLocal(DELETED_PROJECTS_KEY, []);
+      const localDeleted = belongsToCurrentUser ? readJson(DELETED_PROJECTS_KEY, []) : [];
       const remote = await request("/api/sync");
+      const deletedIds = new Set([
+        ...(Array.isArray(remote.deletedProjectIds) ? remote.deletedProjectIds : []),
+        ...(Array.isArray(localDeleted) ? localDeleted : [])
+      ]);
       const merged = {
         progress: mergeProgress(local.progress, remote.progress || {}),
-        projects: mergeProjects(local.projects, Array.isArray(remote.projects) ? remote.projects : [])
+        projects: mergeProjects(
+          local.projects.filter(project => !deletedIds.has(project.id)),
+          (Array.isArray(remote.projects) ? remote.projects : []).filter(project => !deletedIds.has(project.id))
+        )
       };
       writeLocal(PROGRESS_KEY, merged.progress);
       writeLocal(PROJECTS_KEY, merged.projects);
-      await request("/api/sync", { method: "PUT", body: JSON.stringify(merged) });
+      await request("/api/sync", {
+        method: "PUT",
+        body: JSON.stringify({ ...merged, deletedProjectIds: [...deletedIds] })
+      });
+      writeLocal(DELETED_PROJECTS_KEY, []);
       nativeSetItem.call(localStorage, OWNER_KEY, currentUser.id);
       window.dispatchEvent(new CustomEvent("oknew:cloud-sync"));
       setMessage("Progreso sincronizado con tu cuenta.", false);
@@ -125,8 +139,21 @@
     syncTimer = setTimeout(synchronize, 900);
   }
   Storage.prototype.setItem = function(key, value) {
+    if (key === PROJECTS_KEY && this === localStorage) {
+      const previous = readJson(PROJECTS_KEY, []);
+      let next = [];
+      try { next = JSON.parse(value); } catch (_) {}
+      if (Array.isArray(previous) && Array.isArray(next)) {
+        const nextIds = new Set(next.map(project => project && project.id).filter(Boolean));
+        const removedIds = previous.map(project => project && project.id).filter(id => id && !nextIds.has(id));
+        if (removedIds.length) {
+          const existing = readJson(DELETED_PROJECTS_KEY, []);
+          writeLocal(DELETED_PROJECTS_KEY, [...new Set([...(Array.isArray(existing) ? existing : []), ...removedIds])]);
+        }
+      }
+    }
     nativeSetItem.call(this, key, value);
-    if (key === PROGRESS_KEY || key === PROJECTS_KEY) scheduleSync();
+    if (key === PROGRESS_KEY || key === PROJECTS_KEY || key === DELETED_PROJECTS_KEY) scheduleSync();
   };
 
   function setMessage(message, isError) {
