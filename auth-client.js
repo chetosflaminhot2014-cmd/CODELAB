@@ -147,7 +147,7 @@
     panel.querySelector("[data-auth-content]").innerHTML = currentUser && view === "auto" ? accountView() : authView(view);
     panel.querySelectorAll("[data-auth-action]").forEach(button => button.addEventListener("click", () => {
       const action = button.dataset.authAction;
-      if (action === "register" || action === "login" || action === "forgot") showPanel(action);
+      if (action === "register" || action === "login" || action === "forgot" || action === "resend") showPanel(action);
       if (action === "sync") synchronize();
       if (action === "logout") logout();
     }));
@@ -164,6 +164,10 @@
         <label class="oknew-auth-field">Contraseña (10 caracteres mínimo)<input name="password" type="password" minlength="10" maxlength="128" autocomplete="new-password" required></label>
         <button class="oknew-auth-primary">Crear cuenta</button>
       </form><button class="oknew-auth-link" data-auth-action="login">Ya tengo una cuenta · Iniciar sesión</button>`;
+    if (view === "resend") return `
+      <p class="oknew-auth-copy">Te enviaremos otro enlace de verificación si tu cuenta aún no está activada.</p>
+      <form data-auth-form="resend"><label class="oknew-auth-field">Correo electrónico<input name="email" type="email" autocomplete="email" required></label><button class="oknew-auth-primary">Reenviar verificación</button></form>
+      <button class="oknew-auth-link" data-auth-action="login">Volver a iniciar sesión</button>`;
     if (view === "forgot") return `
       <p class="oknew-auth-copy">Escribe el correo asociado a tu cuenta. Te enviaremos un enlace si existe una cuenta registrada.</p>
       <form data-auth-form="forgot"><label class="oknew-auth-field">Correo electrónico<input name="email" type="email" autocomplete="email" required></label><button class="oknew-auth-primary">Enviar enlace</button></form>
@@ -176,7 +180,7 @@
         <button class="oknew-auth-primary">Iniciar sesión</button>
       </form>
       <button class="oknew-auth-link" data-auth-action="forgot">¿Olvidaste tu contraseña?</button>
-      <div class="oknew-auth-divider"></div><button class="oknew-auth-link" data-auth-action="register">Crear una cuenta nueva</button>`;
+      <div class="oknew-auth-divider"></div><button class="oknew-auth-link" data-auth-action="register">Crear una cuenta nueva</button><br><button class="oknew-auth-link" data-auth-action="resend">Reenviar correo de verificación</button>`;
   }
   function accountView() {
     const name = currentUser.displayName || currentUser.email.split("@")[0];
@@ -206,6 +210,9 @@
         updateAvatar();
         await synchronize();
         showPanel("auto", "Sesión iniciada correctamente.");
+      } else if (form.dataset.authForm === "resend") {
+        const result = await request("/api/auth/resend-verification", { method:"POST", body:JSON.stringify(values) });
+        showPanel("login", result.message);
       } else if (form.dataset.authForm === "forgot") {
         const result = await request("/api/auth/forgot-password", { method:"POST", body:JSON.stringify(values) });
         showPanel("login", result.message);
