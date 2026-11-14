@@ -71,13 +71,13 @@ async function sendMail(to, subject, text, eventKey) {
 async function sendVerification(email, token) {
   const link = frontendLink("verify", token);
   await sendMail(email, "Verifica tu correo de OKNEW",
-    `Confirma tu dirección de correo para activar tu cuenta de OKNEW.\\n\\nAbre este enlace: ${link}\\n\\nEl enlace vence en 30 minutos. Si no solicitaste esta cuenta, ignora este mensaje.`,
+    `Confirma tu dirección de correo para activar tu cuenta de OKNEW.\n\nAbre este enlace: ${link}\n\nEl enlace vence en 30 minutos. Si no solicitaste esta cuenta, ignora este mensaje.`,
     `verify-${hashToken(token)}`);
 }
 async function sendPasswordReset(email, token) {
   const link = frontendLink("reset", token);
   await sendMail(email, "Restablece tu contraseña de OKNEW",
-    `Se solicitó restablecer la contraseña de tu cuenta OKNEW.\\n\\nAbre este enlace: ${link}\\n\\nEl enlace vence en una hora. Si no lo solicitaste, ignora este mensaje.`,
+    `Se solicitó restablecer la contraseña de tu cuenta OKNEW.\n\nAbre este enlace: ${link}\n\nEl enlace vence en una hora. Si no lo solicitaste, ignora este mensaje.`,
     `reset-${hashToken(token)}`);
 }
 
