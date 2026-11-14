@@ -158,21 +158,6 @@ function frontendLink(key, token) {
   url.searchParams.set(key, token);
   return url.toString();
 }
-async function sendMail(to, subject, text) {
-  if (!mailer) throw new Error("Email delivery is not configured.");
-  await mailer.sendMail({ from: process.env.SMTP_FROM, to, subject, text });
-}
-async function sendVerification(email, token) {
-  const link = frontendLink("verify", token);
-  await sendMail(email, "Verifica tu correo de OKNEW",
-    `Confirma tu dirección de correo para activar tu cuenta de OKNEW.\n\nAbre este enlace: ${link}\n\nEl enlace vence en 30 minutos. Si no solicitaste esta cuenta, ignora este mensaje.`);
-}
-async function sendPasswordReset(email, token) {
-  const link = frontendLink("reset", token);
-  await sendMail(email, "Restablece tu contraseña de OKNEW",
-    `Se solicitó restablecer la contraseña de tu cuenta OKNEW.\n\nAbre este enlace: ${link}\n\nEl enlace vence en una hora. Si no lo solicitaste, ignora este mensaje.`);
-}
-
 app.get("/api/health", async (req, res, next) => {
   try {
     await pool.query("SELECT 1");
