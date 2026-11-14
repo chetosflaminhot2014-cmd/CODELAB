@@ -44,5 +44,12 @@ CREATE TABLE IF NOT EXISTS achievements (
   UNIQUE (user_id, achievement_key)
 );
 
+CREATE TABLE IF NOT EXISTS deleted_projects (
+  user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  project_id UUID NOT NULL,
+  deleted_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  PRIMARY KEY (user_id, project_id)
+);
+
 CREATE INDEX IF NOT EXISTS learning_progress_user_idx ON learning_progress(user_id);
 CREATE INDEX IF NOT EXISTS projects_user_created_idx ON projects(user_id, created_at DESC);
