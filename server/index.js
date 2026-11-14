@@ -10,7 +10,6 @@ const session = require("express-session");
 const PgSession = require("connect-pg-simple")(session);
 const { Pool } = require("pg");
 const bcrypt = require("bcryptjs");
-const nodemailer = require("nodemailer");
 const { rateLimit } = require("express-rate-limit");
 
 const required = ["DATABASE_URL", "SESSION_SECRET", "FRONTEND_URL"];
@@ -30,16 +29,57 @@ const pool = new Pool({
   connectionTimeoutMillis: 10000
 });
 
-const mailConfigured = Boolean(
-  process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS &&
-  process.env.SMTP_FROM && process.env.SMTP_PORT
-);
-const mailer = mailConfigured ? nodemailer.createTransport({
-  host: process.env.SMTP_HOST,
-  port: Number(process.env.SMTP_PORT),
-  secure: String(process.env.SMTP_SECURE).toLowerCase() === "true",
-  auth: { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS }
-}) : null;
+const mailConfigured = Boolean(process.env.RESEND_API_KEY && process.env.RESEND_FROM);
+
+async function sendMail(to, subject, text, eventKey) {
+  if (!mailConfigured) throw new Error("Transactional email is not configured.");
+  const payload = {
+    from: process.env.RESEND_FROM,
+    to: [to],
+    subject,
+    text
+  };
+  if (process.env.RESEND_REPLY_TO) payload.reply_to = process.env.RESEND_REPLY_TO;
+  const idempotencyKey = `oknew-${eventKey}-${hashToken(to).slice(0, 16)}`;
+  let lastError;
+  for (let attempt = 0; attempt < 3; attempt++) {
+    try {
+      const response = await fetch("https://api.resend.com/emails", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${process.env.RESEND_API_KEY}`,
+          "Content-Type": "application/json",
+          "Idempotency-Key": idempotencyKey
+        },
+        body: JSON.stringify(payload),
+        signal: AbortSignal.timeout(10000)
+      });
+      if (response.ok) return await response.json();
+      const detail = await response.text();
+      const error = new Error(`Resend returned HTTP ${response.status}: ${detail.slice(0, 300)}`);
+      error.status = response.status;
+      if (response.status < 500 && response.status !== 429) throw error;
+      lastError = error;
+    } catch (error) {
+      lastError = error;
+      if (error.status && error.status < 500 && error.status !== 429) throw error;
+    }
+    if (attempt < 2) await new Promise(resolve => setTimeout(resolve, 500 * (2 ** attempt)));
+  }
+  throw lastError || new Error("Email delivery failed.");
+}
+async function sendVerification(email, token) {
+  const link = frontendLink("verify", token);
+  await sendMail(email, "Verifica tu correo de OKNEW",
+    `Confirma tu dirección de correo para activar tu cuenta de OKNEW.\\n\\nAbre este enlace: ${link}\\n\\nEl enlace vence en 30 minutos. Si no solicitaste esta cuenta, ignora este mensaje.`,
+    `verify-${hashToken(token)}`);
+}
+async function sendPasswordReset(email, token) {
+  const link = frontendLink("reset", token);
+  await sendMail(email, "Restablece tu contraseña de OKNEW",
+    `Se solicitó restablecer la contraseña de tu cuenta OKNEW.\\n\\nAbre este enlace: ${link}\\n\\nEl enlace vence en una hora. Si no lo solicitaste, ignora este mensaje.`,
+    `reset-${hashToken(token)}`);
+}
 
 const app = express();
 app.disable("x-powered-by");
