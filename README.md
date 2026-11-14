@@ -4,39 +4,32 @@
 
 Eslogan: *A new way to learn. Knowledge for everyone.*
 
-Plataforma web estática para explorar tecnologías, practicar con ejemplos editables y desarrollar ideas de programación.
+Plataforma de aprendizaje para explorar tecnologías, practicar con ejemplos editables y desarrollar proyectos.
 
-## Tecnologías
-- HTML5
-- CSS3
-- JavaScript (vanilla)
+## Frontend actual
+- HTML5, CSS3 y JavaScript vanilla.
+- Catálogo de 16 tecnologías y rutas introductorias.
+- Progreso y proyectos locales con claves de almacenamiento compatibles con versiones anteriores.
 
-## Catálogo inicial
-JavaScript, Python, TypeScript, Java, C#, C++, C, PHP, Go, Rust, Kotlin, Swift, Lua, SQL, HTML y CSS.
+## Cuentas y persistencia (rama de implementación)
+El backend de la carpeta `server/` incorpora:
+- Registro con correo y contraseña, verificación por email y restablecimiento de contraseña.
+- Hash de contraseñas con bcryptjs, tokens de un solo uso almacenados como SHA-256 y sesiones en PostgreSQL.
+- Perfil, progreso por curso/lección y proyectos sincronizados.
+- Importación por unión de los datos locales existentes; no se eliminan los datos locales durante la sincronización.
 
-## Funciones disponibles
-- Catálogo de 16 tecnologías con búsqueda, filtro y fichas de ruta accesibles con teclado o toque.
-- Rutas guiadas de JavaScript, Python, Java y HTML con tres lecciones cada una, ejemplos y ejercicios autocorregibles.
-- Seguimiento de lecciones completadas guardado localmente por tecnología.
-- Laboratorio con ejemplos editables de JavaScript, Python, Java y HTML.
-- Copiar código al portapapeles.
-- Game Lab con tres preguntas de opción múltiple.
-- Reto de lógica con una sucesión numérica.
-- Creator Studio para diseñar una tarjeta y previsualizarla.
-- Guardado local de hasta 30 tarjetas de proyecto en el navegador actual, con opción para eliminarlas.
-- Panel de perfil local con resumen de tecnologías y proyectos guardados.
-- Sección de inspiración con ideas para proyectos.
-- Diseño adaptable a pantallas móviles y de escritorio.
+## Variables necesarias del backend
+Consulta `server/.env.example`. En producción son obligatorias:
+- `DATABASE_URL`, `SESSION_SECRET`, `FRONTEND_URL`.
+- SMTP: `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS`, `SMTP_FROM`.
 
-## Límites de esta versión
-- El Playground permite editar y copiar ejemplos; no ejecuta código.
-- Las rutas guiadas disponibles son introductorias; las otras 12 tecnologías todavía no tienen lecciones.
-- El avance se guarda en el almacenamiento local del navegador y no se sincroniza entre dispositivos.
-- Los proyectos se guardan únicamente en el almacenamiento local del navegador y dispositivo; no se sincronizan con una cuenta ni se comparten.
-- No hay autenticación, backend ni base de datos.
+## Ejecutar backend localmente
+Desde `server/`:
+1. Copia `.env.example` a `.env` y completa los valores.
+2. Ejecuta `npm install`.
+3. Ejecuta `npm start`.
 
-## Ejecutar localmente
-Abre `index.html` en un navegador o sirve el directorio con cualquier servidor estático.
+El servidor aplica `schema.sql` al arrancar. No se deben subir secretos al repositorio.
 
 ## Estado
-Alpha 0.1.0. Esta versión es una demostración estática de aprendizaje y creación. Las funciones futuras deberán documentarse cuando estén implementadas.
+La implementación de cuentas y sincronización está en desarrollo en la rama `feature/oknew-accounts-postgres`. No se considera activa hasta desplegar y comprobar el backend, PostgreSQL y el proveedor SMTP.

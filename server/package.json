@@ -1,0 +1,25 @@
+{
+  "name": "oknew-api",
+  "version": "1.0.0",
+  "private": true,
+  "description": "API de cuentas y progreso persistente para OKNEW",
+  "main": "index.js",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "start": "node index.js",
+    "check": "node --check index.js"
+  },
+  "dependencies": {
+    "bcryptjs": "^3.0.2",
+    "connect-pg-simple": "^10.0.0",
+    "cors": "^2.8.5",
+    "express": "^5.1.0",
+    "express-rate-limit": "^8.1.0",
+    "express-session": "^1.18.2",
+    "helmet": "^8.1.0",
+    "nodemailer": "^7.0.9",
+    "pg": "^8.16.3"
+  }
+}
