@@ -103,8 +103,8 @@ app.use(session({
   saveUninitialized: false,
   cookie: {
     httpOnly: true,
-    secure: true,
-    sameSite: "none",
+    secure: process.env.NODE_ENV === "production",
+    sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
     maxAge: 1000 * 60 * 60 * 24 * 14
   }
 }));
@@ -257,7 +257,7 @@ app.post("/api/auth/login", authLimiter, async (req, res, next) => {
   if (!validEmail(email) || typeof password !== "string") return res.status(400).json({ error: "Correo o contraseña incorrectos." });
   try {
     const result = await pool.query(
-      `SELECT u.id, u.email, u.password_hash, u.email_verified_at, p.display_name
+      `SELECT u.id, u.email, u.password_hash, u.email_verified_at, p.display_name, p.bio
        FROM users u LEFT JOIN profiles p ON p.user_id = u.id WHERE u.email = $1`,
       [email]
     );
@@ -270,7 +270,7 @@ app.post("/api/auth/login", authLimiter, async (req, res, next) => {
       req.session.userId = user.id;
       req.session.save(saveError => {
         if (saveError) return next(saveError);
-        res.json({ user: { id: user.id, email: user.email, displayName: user.display_name || "" } });
+        res.json({ user: { id: user.id, email: user.email, displayName: user.display_name || "", bio: user.bio || "" } });
       });
     });
   } catch (error) { next(error); }
@@ -279,7 +279,7 @@ app.post("/api/auth/login", authLimiter, async (req, res, next) => {
 app.post("/api/auth/logout", requireAuth, (req, res, next) => {
   req.session.destroy(error => {
     if (error) return next(error);
-    res.clearCookie("oknew.sid", { httpOnly: true, secure: true, sameSite: "none" });
+    res.clearCookie("oknew.sid", { httpOnly: true, secure: process.env.NODE_ENV === "production", sameSite: process.env.NODE_ENV === "production" ? "none" : "lax" });
     res.json({ message: "Sesión cerrada." });
   });
 });
